@@ -31,7 +31,7 @@ from config import config
 
 
 if (len(sys.argv) < 2):
-    print('Please add a positional argument: day, week or month.')
+    print('Please add a positional argument: hour, day, week or month.')
     quit()
 else:
     if sys.argv[1] == 'day':
@@ -43,8 +43,11 @@ else:
     elif sys.argv[1] == 'month':
         period = 'month'
         date_suffix = datetime.today().strftime('%b')
+    elif sys.argv[1] == 'hour':
+        period = 'hour'
+        date_suffix = datetime.today().strftime('%H')
     else:
-        print('Please use the parameter day, week or month')
+        print('Please use the parameter hour, day, week or month')
         quit()
 
 # Message to return result via SNS
@@ -83,6 +86,7 @@ region = RegionInfo(name=ec2_region_name, endpoint=ec2_region_endpoint)
 keep_week = config['keep_week']
 keep_day = config['keep_day']
 keep_month = config['keep_month']
+keep_hour = config['keep_hour']
 count_success = 0
 count_total = 0
 
@@ -178,6 +182,8 @@ for vol in vols:
                 deletelist.append(snap)
             elif (sndesc.startswith('month_snapshot') and period == 'month'):
                 deletelist.append(snap)
+            elif (sndesc.startswith('hour_snapshot') and period == 'hour'):
+                deletelist.append(snap)
             else:
                 logging.info('     Skipping, not added to deletelist: ' + sndesc)
 
@@ -199,6 +205,8 @@ for vol in vols:
             keep = keep_week
         elif period == 'month':
             keep = keep_month
+        elif period == 'hour':
+            keep = keep_hour
         delta = len(deletelist) - keep
         for i in range(delta):
             del_message = '     Deleting snapshot ' + deletelist[i].description
